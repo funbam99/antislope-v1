@@ -46,4 +46,4 @@ The command reads local JSON files and prints aggregate JSON. It counts unique p
 
 Do not interpret unfinished reviews as ineffective, zero findings as poor attention, or the sum of findings as unique bugs across the company. Different reviews can identify the same issue. Completion and usefulness feedback are descriptive pilot measures, with no control group or causal estimate. Inspect the author handoff separately when validating real problems and follow-up work; it is not part of the aggregate export.
 
-Stopping the local server still ends its review session. Metadata remains in the browser for later viewing/export when a reader runs at that address, but it does not restore the private exercise or chat history.
+Stopping the local server preserves its private review checkpoint. Use `npm start -- minesweeper resume --session <id>` to restore the exercise, successful chat turns, and review progress at the original URL. Metadata and browser-local review records reconnect in the same browser profile; metadata exports themselves do not contain or restore private exercises or chat history.

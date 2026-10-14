@@ -48,7 +48,7 @@ Both stdout and stderr are intercepted, including progress, reasoning events, fi
 
 The bridge and stage-gated API prevent routine answer transport into the primary conversation. They are not an OS sandbox against the same user deliberately reading private files/memory or directly using author endpoints. Skills enforce that protocol. No exercise is prepared by an ordinary subagent that sends a free-text completion to its parent. Main-context fallback generation and private-log dumping are forbidden.
 
-Generation checks structural eligibility, not TypeScript semantics, formatting correctness, or truth of references. The worker reasons about supplied source without executing target code or tests. References remain disputable. There is no executable fork, push-capable execution environment, scoring, automatic sharing, behavioral telemetry, or session persistence. Human-curated preparation and preview remain available for more rigorous verification.
+Generation checks structural eligibility, not TypeScript semantics, formatting correctness, or truth of references. The worker reasons about supplied source without executing target code or tests. References remain disputable. There is no executable fork, push-capable execution environment, scoring, automatic sharing, or behavioral telemetry. Private local session recovery is implemented. Human-curated preparation and preview remain available for more rigorous verification.
 
 ## Local recovery boundary
 

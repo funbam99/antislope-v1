@@ -1,88 +1,144 @@
 # Anti-Slope
 
-Tools and workflows that help people carefully read and understand AI-generated work before passing it on for review.
+### Careful human review of AI-generated work.
 
-Anti-Slope is a project exploring ways to make human review more deliberate, across code, design documents, and other AI-generated work. **Minesweeper is its first product.**
+Read the code, question its behavior, and keep the evidence before asking someone else to review it.
 
-Private GitHub repository: [funbam99/anti-slope](https://github.com/funbam99/antislope-v1).
+[Quick start](#quick-start) · [How Minesweeper works](#how-minesweeper-works) · [What you can review](#what-you-can-review) · [FAQ](#faq) · [Documentation](#documentation)
 
-## First product: Minesweeper
+---
 
-Minesweeper helps authors review AI-generated code before requesting a review from someone else. The curated research prototype introduces zero or one deliberate error only into a local review view. The useful outcome is verified findings about clean code, test evidence, and questions or proposed changes handed over for normal development.
+**Minesweeper** is Anti-Slope's first product: code on the left, AI discussion on the right. Leave inline comments, explore counterexamples together, and turn the conversation into a review handoff.
 
-Exercises can be prepared by a separate human curator or an independent Codex process through the bundled skill bridge. Automated references are hypotheses rather than executed test results. Benefit, accuracy, and preparation cost remain experimental.
+An independent curator or AI context prepares an exercise with zero or one deliberate error, visible only in the review view. The collaborating AI receives the displayed code and your discussion, without the private mutation metadata or reference answers. Reveal is your decision; the original code can have problems too.
 
-## Current status
+This is the **v0.1.0 research prototype**. Start with the bundled example, then review a TypeScript change from your own repository. The [repository](https://github.com/funbam99/antislope-v1) is private; colleagues need access before cloning.
 
-Node.js 22, npm, and TypeScript ESM provide a CLI with help, read-only diagnostics, source snapshot export, curator validation/preview, and a local browser review server. The reader uses a two-column code-and-chat interface with an automatic neutral AI summary. A visible progress bar navigates the review inside the right-hand conversation. First-pass confirmation, explicit reveal, review-card confirmation, follow-up context, and export use chat messages and buttons instead of workflow dialogs or assessment forms. Session actions and appearance settings live in a compact menu; one file-view selector switches between changes, full file, and baseline. System, light, and dark appearance preferences are saved locally. Drag the divider or use its arrow keys to adjust pane widths; double-click restores the default. The width is remembered locally. Comments appear below their selected code range. File/change comments and anchors outside the current view remain visible above the code, with links to the appropriate full-file version. First-pass submission reuses saved comments and sent author chat messages, without separate prediction or no-findings text fields. The visible discussion and comment ranges are frozen locally; a bounded author-message excerpt is retained by the session. AI replies are not automatically treated as findings. New review items stay as unverified questions. The author can confirm a real issue using their recorded post-reveal clean-code evidence, without re-entering it. Confirming the card preserves the follow-up discussion context and releases its reference; it does not claim that a separate prediction was answered. Changed comments or chat require reconfirmation before export. It supports diff and full-file views, four annotation anchors with a selection-triggered comment editor, staged hints and reveal, finding dispositions, historical snapshots, and a downloadable Markdown handoff.
+## Quick start
 
-V1 supports selected existing tracked TypeScript files, including unchanged supporting context. It uses a fixed merge-base and content hashes; committing unchanged content preserves validity. Workspace edits during review preserve the captured session as historical. The bundled skills launch independent exercise generation and reuse this runtime/UI. No executable fork, target-code execution, scoring, or external posting is implemented.
+You need Node.js **22.22.2** ([.nvmrc](./.nvmrc)), npm **10+**, Git, and a modern browser. AI features also require an authenticated Codex CLI on an unmanaged macOS or Linux machine, using Codex's default provider. Native Windows, managed/MDM hosts, and custom provider/model configurations are unsupported in v1.
 
-See [curated exercise preparation and the runnable example](./docs/minesweeper-exercises.md).
-
-## Skill entrypoints
-
-Load [antislope/SKILL.md](./antislope/SKILL.md) for the project entrypoint. It routes code review to [antislope/minesweeper/SKILL.md](./antislope/minesweeper/SKILL.md). These are repository artifacts; no global installation or settings changes are performed.
-
-The bundled helper requires a built Anti-Slope checkout, Node.js 22, Git, and an installed/authenticated Codex CLI. It sends selected immutable source and requirements to that CLI's built-in default model/provider in a fresh context. User configuration and shared daemons are ignored; custom provider/model configuration and system/enterprise/MDM-managed hosts are unsupported. Use an unmanaged macOS/Linux Codex setup. A private bridge starts `codex exec`, suppresses all worker stdout/stderr, validates the result, deletes temporary generator files, and starts the existing UI. Only safe preparation status and the reader URL reach the main conversation. The lightweight status endpoint returns phase/freshness/opaque ID until author reveal. A separate read-only discussion endpoint shares the same displayed full files and diff as the UI so the author and AI can analyze code and test hypotheses by reasoning before reveal. It withholds the clean candidate counterpart, hashes, mutation metadata, hints, and references. Follow-up references remain withheld until their own submission.
-
-In-page chat uses independent, ephemeral Codex app-server calls with only the displayed discussion view, explicitly shared comments, and its own saved conversation. It receives no exercise object, hidden candidate counterpart, hints, or references. Provider failures preserve drafts for retry. Visible assistant text streams into the browser while generation is in progress; reasoning, tool events and internal diagnostics are discarded. The browser polls the protected chat projection every 150 ms while busy. Streaming follows the bottom until the author scrolls up, then keeps that reading position until they return near the bottom. Only completed successful turns enter persisted history and future AI context. Each chat call uses a private temporary configuration/auth home with a copy of existing file-backed CLI authentication, without copying user config or hooks; the temporary home is deleted after the child exits. Generator calls retain their existing private exec transport. Chat shortcuts show the next step, request the next runtime hint after first-pass submission, and organize comments and author discussion into an inline review card. Clicking Hint displays “Give me a hint” and the runtime response, without sending either to the collaborative AI. Review shortcut messages and already released hints are saved in browser local storage for the same session. Reloading or reopening restores their place in the discussion and rebuilds workflow controls from the current server state, without repeating actions or consuming another hint. Review cards reflect the current saved comments and discussion. This local history remains separate from AI requests and metadata exports; clearing browser storage removes it. Restart the local server with `npm start -- minesweeper resume --session <id>` to restore the same URL and server state. After reveal, the code pane and inline review card show the total deliberate errors, how many are covered by current candidate comment ranges, and how many have recorded author verification evidence. Overlapping comments count a deliberate error once; whole-file/change comments and chat claims do not establish location. A comment on the mine counts as flagged immediately, even without a full triggering example. The code marker distinguishes a flagged mine awaiting verification from a mine without a covering comment. Pending verification never means the author failed to locate it. A marker links to the captured clean-code region. Saving a comment automatically opens or updates an inline review card and starts a separate ephemeral organizer before reveal. It receives only public requirements, comments, author messages and the captured displayed review code, with no runtime-provided clean counterpart, baseline, hints, hashes or references. Author messages may contain code the author explicitly chose to share. It preserves author-reported traces/tests with exact source quotations. When an actionable comment lacks an example, it can derive a concrete counterexample from that comment and displayed code, with inputs, predicted behavior, requirement expectations, observable branch steps and exact code citations. These generated records are labeled “AI counterexample · code reasoning, not executed.” They explain the exercise region without automatically creating a verified issue in clean code. Missing, disputed, ambiguous or ungrounded reasoning remains pending. No separate verification form or per-mine confirmation button is needed. The review card displays the provenance and its existing confirmation saves the region explanation. AI reasoning and author reports are not independently executed or verified. Before reveal, cards display the unexecuted reasoning and author comments without mine counts, markers, location controls, hint history or references in organizer requests. Generation does not submit or reveal the session. Evidence summaries are saved in browser storage for the same session, included in the local first-pass snapshot, and rebuilt when comments or conversation change; old author-only caches are invalidated when this workflow upgrades. These personal exercise counts are excluded from metadata exports and AI context. Before reveal, the summary and code markers stay hidden; explicitly requested hints retain their existing stages. The review card has no scores, and shortcuts do not automatically reveal anything or send hints to AI. Chat renders common Markdown (headings, lists, emphasis, links, tables, quotes, inline code, and fenced code blocks), with basic lexical highlighting for TypeScript, JavaScript, and JSON. Raw HTML stays inert and remote images are not loaded. Each saved comment has a “Quote in chat” action that appends its displayed code and comment to the composer without sending or replacing an existing draft. Comments and multi-line selection ranges are saved in browser local storage for the session URL, without storing code or answers. Reopening the same session in the same browser restores them, including after the server is resumed. Existing tab-scoped comments migrate on their next page reload; browser storage clearing removes the saved copy. The comment editor contains only the comment and selection actions. Double-click a word or drag across lines to open the selection editor; “Add to Chat” quotes the selected lines directly without requiring a comment. After reveal, quotations use the captured clean candidate.
-
-Usage & outcomes saves anonymous session metadata locally and exports it only on request. It reports completion, author-assessed real issues with recorded evidence, real-issue test handoffs, unresolved questions, and optional usefulness feedback. It excludes source, comments, chat, answers, hint usage, and behavioral trails. See [metadata export and internal aggregation](./docs/minesweeper-metadata.md).
-
-See the [skill workflow and isolation limits](./docs/minesweeper-skills.md). Independent generation is experimental and does not execute tests or prove reference correctness.
-
-## Local development
-
-Use Node.js 22 (the current baseline is 22.22.2), its bundled npm, and Git. The `.nvmrc` file pins the development version; with nvm, run `nvm install` and `nvm use` first.
+### Install the runtime
 
 ```sh
-npm install
-npm run dev -- --help
-npm run dev -- doctor
-```
-
-`doctor` checks Node.js, Git, and the current working directory without changing Git configuration or workspace files.
-
-Before committing, run:
-
-```sh
-npm run check
+git clone https://github.com/funbam99/antislope-v1.git
+cd antislope-v1
+npm ci
 npm run build
-npm test
 npm start -- doctor
 ```
 
-`check` checks types and formatting, `build` compiles TypeScript, and `start` runs the compiled CLI.
+If you use nvm, run `nvm install` and `nvm use` before `npm ci`. `doctor` checks Node.js, Git, and the current directory without changing anything; it does not check Codex login. `npm start` alone prints help.
 
-## Minesweeper boundaries
+### Connect AI
 
-- Deliberate bugs exist only in the review view. Never write them into the target repository or workspace.
-- Keep mutation patches, answers, and random seeds separate from the reader's view until the appropriate reveal stage.
-- Prioritize real findings. Completion depends on addressing findings and handing over unresolved questions, without pass scores, hit-rate thresholds, leaderboards, or performance ratings.
-- Missing a deliberate bug does not prove inattention or lack of ability. Finding them all does not prove that the code is correct or fully reviewed.
-- Do not retain click trails, dwell times, or similar behavioral data by default. Sending comments, messages, or review summaries requires explicit user authorization.
-
-See [AGENTS.md](./AGENTS.md) for development rules and the full Minesweeper constraints.
-
-## Try Minesweeper
+The tested Codex CLI version is **0.162.0-alpha.17.2**. For a reproducible first trial:
 
 ```sh
-npm run build
+npm install -g @openai/codex@0.162.0-alpha.17.2
+codex --version
+codex -c 'cli_auth_credentials_store="file"' login
+codex -c 'cli_auth_credentials_store="file"' login status
+```
+
+Complete the browser login with your own Codex-enabled account. Skip these setup steps if the compatible CLI and file-backed login are already configured. See the official [CLI](https://learn.chatgpt.com/docs/codex/cli) and [authentication](https://learn.chatgpt.com/docs/auth) guides.
+
+Chat and counterexample workers copy existing file-backed credentials from `CODEX_HOME/auth.json` (normally `~/.codex/auth.json`) into a temporary private home. Keyring-only login is insufficient; keep that file private and never commit or share it. Incompatible CLI builds fail rather than weakening isolation.
+
+Manual review works without Codex. AI chat, counterexamples, and independent generation require it and send selected code and explicitly shared discussion through the default provider.
+
+### Try the example
+
+```sh
 node examples/minesweeper/create-example.mjs
 ```
 
-The example prints paths to a separate temporary repository, snapshot, and private exercise. Use those paths with:
+The command creates a separate temporary repository and prints `root`, `repo`, `snapshot`, and `exercise` paths. Use the printed **repo** and **exercise** values:
 
 ```sh
-npm start -- minesweeper validate --snapshot <snapshot-json> --exercise <exercise-json> --preview
-npm start -- minesweeper review --repo <repository> --exercise <exercise-json>
+npm start -- minesweeper review \
+  --repo "<printed repo path>" \
+  --exercise "<printed exercise path>"
 ```
 
-Open the printed loopback URL; Ctrl-C closes the server and preserves its private local checkpoint. The command prints a session ID and a resume command. Run `npm start -- minesweeper resume --session <id>` to reopen that session at its original URL. Export the handoff before resuming normal fixes and tests. Only the author chooses whether to share it.
+Open the **Author review** URL printed in the terminal. Keep the terminal running and save its printed resume command. The server chooses the port; use its address rather than a fixed localhost URL.
 
-Session recovery files live under `~/.local/state/antislope/sessions/<id>/`, outside the reviewed repository, with owner-only directory/file permissions. They include captured source, the private exercise, successful chat turns and request IDs, and review state. Treat them as private runtime data: never read them in the facilitating conversation or upload/commit them. Atomic checkpoints are saved before successful action responses. In-flight failed chat turns are not saved. Recovery validates the original snapshot/exercise and review transitions, preserves the reader ID and stage, and does not regenerate an exercise. The original port must be free; recovery fails instead of choosing another origin and losing browser-local comments/ranges or workflow history. Curator previews remain temporary. Existing servers started before recovery was implemented have no checkpoint and cannot be resumed with this command.
+Use the exercise path without opening its JSON: it contains private answers. Curator `validate --preview` is unnecessary for an author trying the example. This small demo illustrates the workflow; it is not a blinded research trial.
 
-The next product experiment is a few curated author reviews. An executable disposable fork would need a separate isolation design and an environment unable to push to a remote.
+### Review your own change
 
-If an old exercise is lost before a checkpoint can be created, a recovered reader archive can preserve available displayed code, annotations and discussion. It is explicitly read-only: the original references and hint level are unavailable, AI turns and exercise actions are disabled, and no reconstructed answers or handoff certification are supplied. This fallback does not count as a complete migration.
+Keep the target repository separate from this runtime checkout. Write its intended behavior in a requirements file outside the target repository, without reference answers or mutation suggestions. Select changed code and relevant supporting files:
+
+```sh
+node antislope/scripts/session.mjs run \
+  --repo "/absolute/path/to/your-repository" \
+  --base main \
+  --file src/changed.ts \
+  --file src/supporting.ts \
+  --requirements-file "/outside/your-repository/requirements.txt"
+```
+
+Replace the paths and comparison branch; repeat `--file` for context. The helper prepares the exercise in an independent Codex context and prints preparation status followed by a reader URL. Open it and keep the terminal running. Keep selected files unchanged during preparation; remove the temporary requirements file afterward when appropriate.
+
+For an assistant-led workflow, ask your coding assistant to load [antislope/SKILL.md](./antislope/SKILL.md) from this checkout. It routes code review to [Minesweeper](./antislope/minesweeper/SKILL.md). Cloning does not install a global skill.
+
+## How Minesweeper works
+
+Read a captured change, discuss what it does, then compare your findings with the exercise explanation. Target files stay untouched throughout.
+
+1. **Read and comment.** Select code or double-click a word to leave an inline comment. Multi-line ranges are saved. Use **Add to Chat** or **Quote in chat** to bring code and comments into the composer. Enter sends; Shift+Enter adds a newline.
+2. **Explore the doubt.** A saved comment automatically asks AI to derive a concrete counterexample and updates the review card in the conversation, including before reveal. AI reasoning is labeled **not executed**. Unclear or unsupported observations remain questions.
+3. **Save the first pass.** Choose **Next Step → Submit first pass** after active AI work finishes. The existing comments and chat become the record; there is no extra form. **Hint** then becomes available. Runtime hints are displayed separately and excluded from AI context.
+4. **Reveal when ready.** Use **Next Step** and the explicit reveal action. The left pane switches to captured clean code; exercise counts, locations, and initial references become available. Before reveal, review cards contain none of those details.
+5. **Confirm and export.** Review the card, discuss the clean-code follow-up, then choose **Confirm review card → Export handoff**. No duplicate assessment fields are needed. Confirmation approves the record, not proof that a test ran. Changed comments or chat require reconfirmation; normal tests and fixes use clean code.
+
+Replies stream, follow new output, and preserve your position when you scroll up. Drag the divider to resize the panes. Appearance, requirements/context, and **Usage & outcomes** are in the top-right menu.
+
+## What you can review
+
+| Input or feature   | V1 behavior                                                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript changes | 1–12 existing tracked UTF-8 `.ts` files, each up to 128 KiB and 2,000 lines; at least one selected file must differ from baseline. Added, deleted, and renamed files are unsupported. |
+| Surrounding code   | Changes, Full file, and Baseline views for selected files. Unselected dependencies can be recorded as questions.                                                                      |
+| Version changes    | `--base` fixes the merge-base and captured content. Later edits preserve a historical review; committing unchanged content does not invalidate it.                                    |
+| Session recovery   | Server checkpoints retain the exercise, successful chat, and review stage. Browser storage retains comments, ranges, hints, counterexamples, and review messages.                     |
+| Outcomes           | Local anonymous metadata and manual export/aggregation of completion, recorded issues, test handoffs, and unresolved questions. No personal scoring.                                  |
+
+Mutations change displayed line contents only. V1 does not execute target code or offer an executable fork. AI counterexamples alone cannot become verified issues in clean code; unclear requirements and disputed references remain valid outcomes. Finding every deliberate error does not prove the change safe. Nothing is automatically posted to GitHub or sent to another person.
+
+## FAQ
+
+### Can I continue after closing the tab or restarting the service?
+
+Yes. Stop the server with Ctrl-C, then run from this checkout:
+
+```sh
+npm start -- minesweeper resume --session "<SESSION_ID>"
+```
+
+Use the startup command's ID, or the 48-character path segment in the reader URL. Resume retains the original URL and port, which must be free. Reopen it in the **same browser profile** to reconnect browser-local records. Another profile has separate storage; clearing browser storage deletes its local copy. Failed or unfinished AI replies are not committed.
+
+Private recovery files live under `~/.local/state/antislope/sessions/`. They contain captured code and answers: do not read them into a facilitating AI conversation, commit them, or upload them. Resume restores the existing exercise; sessions created before recovery support have no recoverable checkpoint.
+
+### Why does doctor pass when AI is unavailable?
+
+It checks the runtime environment, not Codex or provider access. Check `codex --version`, the file-backed login status command above, Codex on `PATH`, and account/network availability. Do not remove isolation flags to work around a failure. See [generation and isolation](./docs/minesweeper-skills.md).
+
+### What if the exercise does not match my code?
+
+Keep selected files frozen until the reader starts, or ask the curator/generator to prepare a fresh exercise. Author startup errors deliberately omit private locations. Do not inspect answers to diagnose them; curators have a separate [validation and preview workflow](./docs/minesweeper-exercises.md).
+
+### Can we measure whether the pilot is useful?
+
+Use **Usage & outcomes** to inspect and manually export local metadata. Records describe completion and reported outcomes, not individual ability or causal improvement. Use consistent anonymous participant IDs for aggregation; see the [metadata guide](./docs/minesweeper-metadata.md). Hint use, source code, comment text, chat, and exercise outcomes are excluded from these exports.
+
+## Documentation
+
+- [Project skill](./antislope/SKILL.md) — assistant entrypoint and routing.
+- [Minesweeper skill](./antislope/minesweeper/SKILL.md) — code review workflow.
+- [Generation and isolation](./docs/minesweeper-skills.md) — Codex workers, discussion context, streaming, and recovery.
+- [Curated exercises](./docs/minesweeper-exercises.md) — snapshots, human preparation, validation, and preview.
+- [Metadata](./docs/minesweeper-metadata.md) — local exports and internal aggregation.
+- [Development rules](./AGENTS.md) — project boundaries and validation requirements.
+
+For development, run `npm run check`, `npm run build`, and `npm test`. Private local working files and runtime artifacts are ignored by Git and unnecessary for installation or use.
