@@ -1,0 +1,6 @@
+node_modules/
+dist/
+coverage/
+.anti-slope/
+package-lock.json
+brainstorm.md
