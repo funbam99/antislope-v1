@@ -12,7 +12,7 @@ Read the code, question its behavior, and keep the evidence before asking someon
 
 An independent curator or AI context prepares an exercise with zero or one deliberate error, visible only in the review view. The collaborating AI receives the displayed code and your discussion, without the private mutation metadata or reference answers. Reveal is your decision; the original code can have problems too.
 
-This is the **v0.1.0 research prototype**. Start with the bundled example, then review a TypeScript change from your own repository. The [repository](https://github.com/funbam99/antislope-v1) is private; colleagues need access before cloning.
+This is the **v0.1.0 research prototype**. Start with the bundled example, then review a TypeScript change from your own repository. The [repository](https://github.com/funbam99/antislope-v1) is public; clone it to try the prototype.
 
 ## Quick start
 
